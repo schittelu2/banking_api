@@ -1,0 +1,29 @@
+#%RAML 1.0
+title: bank-customers
+description: this is to create banking application
+version: 1.0
+protocols:
+  - HTTP
+  - HTTPS
+traits:
+  nani: !include traits/inputTrait.raml
+securitySchemes:
+  secure: !include securitySchemas/inputSecurityScheme.raml
+securedBy:
+  - secure
+/customers:
+  post:
+    is:
+      - nani
+    body:
+      application/json:
+        type: !include dataTypes/inputDataType.raml
+        example: !include examples/example.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include examples/201example.json
+              
+        
+          
