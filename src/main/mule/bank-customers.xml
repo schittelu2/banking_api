@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns:email="http://www.mulesoft.org/schema/mule/email" xmlns:snowflake="http://www.mulesoft.org/schema/mule/snowflake" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd 
+http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
+http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
+    <http:listener-config name="bank-customers-httpListenerConfig">
+        <http:listener-connection host="0.0.0.0" port="8081" />
+    </http:listener-config>
+    <apikit:config name="bank-customers-config" api="bank-customers.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="cd73cedd-5b8f-4b28-8dc6-f1a80ac7d46e" >
+		<snowflake:snowflake-connection accountName="${snowflake.account}" warehouse="${snowflake.warehouse}" database="${snowflake.database}" schema="${snowflake.schema}" user="${snowflake.user}" password="${snowflake.password}" role="${snowflake.role}"/>
+	</snowflake:snowflake-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="d108a502-5a46-4bce-8ccd-3a0debec33b6" file="dev.properties" />
+	<configuration doc:name="Configuration" doc:id="4fb8052a-d6b7-4985-b0d3-fc6e3a280631" defaultErrorHandler-ref="Global_Error_Handler" />
+	<email:smtp-config name="Email_SMTP" doc:name="Email SMTP" doc:id="778eebbd-73b6-4338-a617-14490385f904" >
+		<email:smtp-connection host="${email.host}" port="${email.port}" user="${email.user}" password="${email.password}">
+			<email:properties >
+				<email:property key="mail.smtp.starttls.required" value="true" />
+			</email:properties>
+		</email:smtp-connection>
+	</email:smtp-config>
+	<flow name="bank-customers-main">
+        <http:listener config-ref="bank-customers-httpListenerConfig" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+				<http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body><![CDATA[#[payload]]]></http:body>
+                <http:headers><![CDATA[#[vars.outboundHeaders default {}]]]></http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="bank-customers-config" />
+    </flow>
+    <flow name="bank-customers-console">
+        <http:listener config-ref="bank-customers-httpListenerConfig" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="bank-customers-config" />
+    </flow>
+    <flow name="post:\customers:application\json:bank-customers-config">
+        <logger level="INFO" doc:name="Logger" doc:id="2a7df583-0cca-4cca-966a-ac0e527aa6d0" message="--------------Customer Account Creation Started -------------- #[payload]"/>
+		<set-variable value="#[attributes.queryParams.customerName]" doc:name="customerName" doc:id="8fa30b32-1e8f-4b83-aaca-4f0c4d2871ad" variableName="customerName"/>
+		<set-variable value="#[attributes.queryParams.bank]" doc:name="bank" doc:id="45c8aeb5-3805-496c-94eb-0fb4e801b895" variableName="bank"/>
+		<set-variable value="#[attributes.queryParams.accountType]" doc:name="accountType" doc:id="a5039e92-0e02-41d5-8fde-3b01758c33ba" variableName="accountType"/>
+		<set-variable value="#[attributes.queryParams.branchName]" doc:name="branchName" doc:id="02539f6d-d792-4153-9d30-a1212c1ca21a" variableName="branchName"/>
+		<set-variable value="#[payload.accountNum]" doc:name="accountNum" doc:id="ffb9f51b-d565-4e08-9077-07493897d010" variableName="accountNum"/>
+		<set-variable value="#[payload.mailId]" doc:name="mailId" doc:id="c2b93668-f343-43fa-8b6e-eeb52e08dbaf" variableName="mailId"/>
+		<set-variable value="#[[]]" doc:name="emptyArray" doc:id="d359e168-53e8-4b6b-b352-244295630b27" variableName="inputPayload"/>
+		<set-variable value="#[%dw 2.0&#10;output application/json&#10;---&#10;vars.inputPayload &lt;&lt; payload]" doc:name="adding payload to empty array" doc:id="ae21b9db-1c38-4f48-a4f8-cfa6088b5518" variableName="inputPayload"/>
+		<snowflake:select doc:name="Select" doc:id="a7bfbf99-1378-458c-914b-735277740d0d" config-ref="Snowflake_Config">
+			<snowflake:sql ><![CDATA[select accountNum,bank from bank_transactions where accountNum= :accountNum and bank= :bank;]]></snowflake:sql>
+			<snowflake:input-parameters ><![CDATA[#[{
+	"accountNum" : payload.accountNum,
+	"bank" : vars.bank
+}]]]></snowflake:input-parameters>
+		</snowflake:select>
+		<choice doc:name="Choice" doc:id="c2e74094-1a82-4a2c-9c4f-dbc30238ca04" >
+			<when expression="#[sizeOf(payload) &gt; 0]">
+				<ee:transform doc:name="Transform Message" doc:id="1ff644de-8170-49b7-9a32-d3c04d582a60" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ((item, index) -> 
+	
+	"Status" : "Account " ++ item.ACCOUNTNUM ++ " already exists.Check the Account Number"	
+)
+
+
+
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="0400da93-ee9c-4aad-af08-c8858e6b5139" message="#[payload]"/>
+			</when>
+			<otherwise >
+				<snowflake:insert doc:name="Insert" doc:id="0a737ca0-3ba8-45bd-8d4c-0ae5928aae71" config-ref="Snowflake_Config">
+					<snowflake:sql ><![CDATA[insert into bank_transactions (customerName,bank,accountType,branchName,accountNum,atmPin,ifscCode,mailId,phoneNumber,transactiontimestamp) 
+  values (:customerName,:bank,:accountType,:branchName,:accountNum,:atmPin,:ifscCode,:mailId,:phoneNumber,:transactiontimestamp)]]></snowflake:sql>
+					<snowflake:input-parameters ><![CDATA[#[{(vars.inputPayload map ((item, index) -> {
+	"customerName" : vars.customerName,
+	"bank" : vars.bank,
+	"accountType" : vars.accountType,
+	"branchName" : vars.branchName,
+	"accountNum" : item.accountNum,
+	"atmPin" : item.atmPin,
+	"ifscCode" : item.ifscCode,
+	"mailId" : item.mailId,
+	"phoneNumber" : item.phoneNumber,
+	"transactiontimestamp" : now() as String {format: "dd:MMM:yyyy 'T' hh:mm:ss"}
+	}
+))}]]]></snowflake:input-parameters>
+				</snowflake:insert>
+				<logger level="INFO" doc:name="Logger" doc:id="0001b268-2989-4c09-8503-40b131ba5977" message="-----------------------Before Sendning Email ----------------------"/>
+				<ee:transform doc:name="Transform Message" doc:id="83c28d8f-67be-4189-b4e8-368c0a9e4c62">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+	"Account created succesfully with account number "++ vars.accountNum as String ++ " in" ++ vars.bank as String++ " bank"
+	
+]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<email:send doc:name="Send" doc:id="2b3003dc-f3b4-4d72-8a4d-1e9969c12c34" config-ref="Email_SMTP" fromAddress="${email.user}" subject='#["Account created succesfully in" ++ vars.bank as String]'>
+					<email:to-addresses >
+						<email:to-address value="#[vars.mailId]" />
+					</email:to-addresses>
+					<email:body contentType="text/plain">
+					</email:body>
+				</email:send>
+				<logger level="INFO" doc:name="Logger" doc:id="4d33c7c8-8bef-4103-9e3e-7e27a872abf7" message="-----------------------After Sendning Email ----------------------=====" />
+				<ee:transform doc:name="Transform Message">
+            <ee:message>
+                <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+
+		"status" : "Account created succesfully with Account Number::" ++ vars.accountNum as String
+
+
+]]></ee:set-payload>
+            </ee:message>
+        </ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="99a51ba3-86c1-4742-9acc-4c03c0eece7d" message="#[payload]" />
+			</otherwise>
+		</choice>
+    </flow>
+</mule>
