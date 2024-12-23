@@ -115,7 +115,7 @@ output application/json
 					<email:body contentType="text/plain">
 					</email:body>
 				</email:send>
-				<logger level="INFO" doc:name="Logger" doc:id="4d33c7c8-8bef-4103-9e3e-7e27a872abf7" message="-----------------------After Sendning Email ----------------------" />
+				<logger level="INFO" doc:name="Logger" doc:id="4d33c7c8-8bef-4103-9e3e-7e27a872abf7" message="-----------------------After Sendning Email ----------------------=====" />
 				<ee:transform doc:name="Transform Message">
             <ee:message>
                 <ee:set-payload><![CDATA[%dw 2.0
