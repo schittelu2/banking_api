@@ -3,7 +3,7 @@
 http://www.mulesoft.org/schema/mule/snowflake http://www.mulesoft.org/schema/mule/snowflake/current/mule-snowflake.xsd
 http://www.mulesoft.org/schema/mule/email http://www.mulesoft.org/schema/mule/email/current/mule-email.xsd">
     <http:listener-config name="bank-customers-httpListenerConfig">
-        <http:listener-connection host="0.0.0.0" port="8081" />
+        <http:listener-connection host="0.0.0.0" port="${http.port}" />
     </http:listener-config>
     <apikit:config name="bank-customers-config" api="bank-customers.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
     <snowflake:snowflake-config name="Snowflake_Config" doc:name="Snowflake Config" doc:id="cd73cedd-5b8f-4b28-8dc6-f1a80ac7d46e" >
