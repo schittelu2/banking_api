@@ -31,19 +31,17 @@
 				<extensions>true</extensions>
 				<configuration>
 					<cloudHubDeployment>
-				      <uri>https://anypoint.mulesoft.com</uri>
-				      <muleVersion>4.8.1</muleVersion>
-				      <username>${username}</username>
-				      <password>${password}</password>
-				      <applicationName>banking_api</applicationName>
-				      <environment>dev</environment>
-				      <region>US East</region>
-				      <workers>1</workers>
-				      <workerType>Micro</workerType>
-				      <properties>
-				        <http.port>${http.port}</http.port>
-				      </properties>
-				    </cloudHubDeployment>
+						<uri>https://anypoint.mulesoft.com</uri>
+						<muleVersion>${mule.version}</muleVersion>
+						<username>${anypoint.username}</username>
+						<password>${anypoint.password}</password>
+						<applicationName>${appname}</applicationName>
+						<environment>${env}</environment>
+						<region>US ${region}</region>
+						<workers>${worker}</workers>
+						<workerType>${workerType}</workerType>
+						<bussinessGroup>${bussiness}</bussinessGroup>
+					</cloudHubDeployment>
 					<sharedLibraries>
 						<sharedLibrary>
 							<groupId>net.snowflake</groupId>
@@ -88,7 +86,7 @@
 		<dependency>
 			<groupId>org.mule.connectors</groupId>
 			<artifactId>mule-email-connector</artifactId>
-			<version>1.7.3</version>
+			<version>1.7.4</version>
 			<classifier>mule-plugin</classifier>
 		</dependency>
 	</dependencies>
