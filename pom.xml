@@ -40,8 +40,7 @@
 						<region>US ${region}</region>
 						<workers>${worker}</workers>
 						<workerType>${workerType}</workerType>
-						<bussinessGroup>${bussiness}</bussinessGroup>
-					</cloudHubDeployment>
+						</cloudHubDeployment>
 					<sharedLibraries>
 						<sharedLibrary>
 							<groupId>net.snowflake</groupId>
